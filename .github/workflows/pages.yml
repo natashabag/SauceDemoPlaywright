@@ -1,0 +1,68 @@
+name: Deploy Allure to GitHub Pages
+
+# Setup: Go to Settings > Pages > Source: GitHub Actions
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 18
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright
+      run: npx playwright install --with-deps chromium
+    
+    - name: Run tests
+      run: npx playwright test --project=chromium
+      continue-on-error: true
+    
+    - name: Generate Allure Report
+      if: always()
+      run: npm run allure:generate
+    
+    - name: Create index redirect
+      run: |
+        echo '<!DOCTYPE html>
+        <html>
+        <head>
+          <meta http-equiv="refresh" content="0; url=./allure-report/index.html">
+          <title>Test Reports</title>
+        </head>
+        <body>
+          <p>Redirecting to <a href="./allure-report/index.html">test reports</a>...</p>
+        </body>
+        </html>' > index.html
+    
+    - uses: actions/configure-pages@v4
+    
+    - uses: actions/upload-pages-artifact@v3
+      with:
+        path: '.'
+    
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
