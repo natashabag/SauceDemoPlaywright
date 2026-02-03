@@ -12,6 +12,12 @@ I realized my GitHub didn't have a Playwright project even though it's the tool 
 - **Faker.js** - Dynamic test data generation
 - **GitHub Actions** - CI/CD pipeline
 
+## Live Allure Report
+
+👉 [View Report](https://natashabag.github.io/SauceDemoPlaywright/allure-report/)
+
+![Allure Report](assets/allure-report.png)
+
 ## Running Tests
 
 ```bash
